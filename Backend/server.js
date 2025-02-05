@@ -16,6 +16,7 @@ app.use(express.json());
 connectDb();
 
 app.use("/api/user", userRoutes)
+app.use("/api/chat", )
 
 
 const PORT = process.env.PORT;
