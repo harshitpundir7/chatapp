@@ -35,12 +35,12 @@ export const registerUser = async (req, res) => {
         const token = generateToken(newUser._id);
 
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'strict',
-            maxAge: 3600000 
-        });
+res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 3600000
+  })
 
         res.status(200).json({
             _id: newUser._id,
@@ -69,12 +69,13 @@ export const loginUser = async (req, res) => {
 
         const token = generateToken(user._id);
 
-        res.cookie('token', token, {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'strict',
-            maxAge: 3600000 ,  
-        }).json({
+
+res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 3600000
+  }).json({
             _id: user._id,
             name: user.name,
             email: user.email,
@@ -85,3 +86,39 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error at login" });
     }
 };
+export const logoutUser = (req, res) => {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    });
+    res.status(200).json({ message: "Logged out successfully" });
+  };
+
+export const allUsers = async(req,res)=>{
+    try {
+        const keyword = req.query.search
+        ?{
+            $or: [
+                { name: { $regex: req.query.search, $options: "i" } },
+                { email: { $regex: req.query.search, $options: "i" } }
+              ]
+        }: {}
+
+        const users = await User.find(keyword)
+        .find({ _id: { $ne: req.user._id } })
+        .select("-password");
+
+    res.json(users);
+
+    } catch (error) {
+        res.status(500).json({ message: "Error searching users" });
+    }
+}
+
+export const me = async(req, res)=>{
+    res.json({
+        _id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,}); 
+}

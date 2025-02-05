@@ -1,4 +1,4 @@
-import Chat from "../model/chatModel";
+import Chat from "../model/chatModel.js";
 
 const accessChat = async (req, res) => {
   const { userId } = req.body;
@@ -173,4 +173,11 @@ const renameGroup = async (req, res) => {
     }
   };
   
-export default  {accessChat, fetchChats, createGroupChat, addToGroup, removeFromGroup, renameGroup};
+  export { 
+    accessChat, 
+    fetchChats, 
+    createGroupChat, 
+    addToGroup, 
+    removeFromGroup, 
+    renameGroup 
+};

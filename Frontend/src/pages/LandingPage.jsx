@@ -1,21 +1,36 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import screenShoot from "../assets/Screenshoot.png";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Added import
 import spongeBobImage from "../assets/pngegg.png";
 
-
 function LandingPage() {
-  const navigate = useNavigate()
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = document.cookie.includes('token');
-    console.log(token);
-    if (token) {
-      navigate('/chats');
-    }
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/user/me', {
+          withCredentials: true
+        });
+        navigate('/chats');
+      } catch (error) {
+        console.error('Auth check error:', error);
+        if (error.response?.status === 401) {
+          document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
 
+    checkAuth();
+  }, [navigate]);
+
+  if (isCheckingAuth) {
+    return <div className="text-white text-center p-8">Checking authentication status...</div>;
+  }
   return (
     <div className="relative">
       <div

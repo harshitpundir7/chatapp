@@ -10,6 +10,7 @@ import { useToast } from '@chakra-ui/react';
 const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -54,12 +55,26 @@ const Login = () => {
         }
     };
     useEffect(() => {
-        const token = document.cookie;
-        console.log(token);
-        if (token) {
-          navigate('/chats');
-        }
-      }, []);
+        const checkAuth = async () => {
+          try {
+            const response = await axios.get('http://localhost:5000/api/user/me', {
+              withCredentials: true
+            });
+            navigate('/chats');
+          } catch (error) {
+            // Optional: Handle specific error cases
+          } finally {
+            setIsCheckingAuth(false);
+          }
+        };
+      
+        checkAuth();
+      }, [navigate]);
+
+      if (isCheckingAuth) {
+        return <> Wait... </>;
+      }
+      
 
     return (
         <AuthWrapper title="Login">

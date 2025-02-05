@@ -14,6 +14,7 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pic, setPic] = useState();
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -98,8 +99,6 @@ const Signup = () => {
         setLoading(false);
         return;
       }
-
-      // Make API call
       const response = await axios.post("http://localhost:5000/api/user", {
         email,
         name,
@@ -115,7 +114,7 @@ const Signup = () => {
           duration: 9000,
           isClosable: true,
         });
-        // Optional: Store user data or token if returned from API
+       
         if (response.data.token) {
           localStorage.setItem("userToken", response.data.token);
         }
@@ -137,11 +136,26 @@ const Signup = () => {
   };
 
   useEffect(() => {
-    const token = document.cookie.includes("token");
-    if (token) {
-      navigate("/chats");
-    }
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/user/me', {
+          withCredentials: true
+        });
+        navigate('/chats');
+      } catch (error) {
+        // Optional: Handle specific error cases
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+  
+    checkAuth();
   }, [navigate]);
+
+  if (isCheckingAuth) {
+    return <> Wait... </>;
+  }
+  
 
   return (
     <AuthWrapper title="Create Account">
